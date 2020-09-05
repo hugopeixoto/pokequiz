@@ -33,23 +33,36 @@ def pokedex_national(pokemon_instance):
         if d.pokedex.is_main_series == 1 and d.pokedex_id == 1
     ]
 
+def operations(string_representation):
+    return {
+        ">=": lambda x, y: any(a >= b for a in x for b in y),
+        "<=": lambda x, y: any(a <= b for a in x for b in y),
+        "==": lambda x, y: any(a == b for a in x for b in y),
+    }[string_representation]
+
+def operand(part):
+    if part == "pokedex.national":
+        return pokedex_national
+    elif part == "pokedex.regional":
+        return pokedex_regional
+    elif part.isdigit():
+        return lambda species: [int(part)]
+    else:
+        raise "oops"
+
 def poop(query):
     session = get_session([])
 
     pokemon = session.query(pokedex.db.tables.Pokemon).all()
 
-    if query == "pokedex.national <= 151":
-        pokemon = [
-            p for p in pokemon
-            if any(r <= 151 for r in pokedex_national(p))
-        ]
+    parts = query.split(" ")
 
-    if query == "pokedex.regional == 1":
-        pokemon = [
-            p for p in pokemon
-            if any(r == 1 for r in pokedex_regional(p))
-        ]
+    op1 = operand(parts[0])
+    opr = operations(parts[1])
+    op2 = operand(parts[2])
+    query = lambda species: opr(op1(species), op2(species))
 
+    pokemon = [p for p in pokemon if query(p)]
     return pokemon
 
 for p in poop(sys.argv[1]):
