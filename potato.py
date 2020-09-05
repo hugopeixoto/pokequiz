@@ -57,18 +57,19 @@ def evolution_fn(fn):
         if pokemon_instance.species.parent_species is None:
             return []
         else:
-            return [fn(p) for p in pokemon_instance.species.parent_species.pokemon]
+            return [any(fn(p)) for p in pokemon_instance.species.parent_species.pokemon]
 
     return f
 
 
 def operations(string_representation):
+    binop = lambda op: lambda x, y: lambda species: [any(op(a, b) for a in x(species) for b in y(species))]
     return {
-        ">=": lambda x, y: lambda species: [any(a >= b for a in x(species) for b in y(species))],
-        "<=": lambda x, y: lambda species: [any(a <= b for a in x(species) for b in y(species))],
-        "==": lambda x, y: lambda species: [any(a == b for a in x(species) for b in y(species))],
-        "and": lambda x, y: lambda species: [any(a and b for a in x(species) for b in y(species))],
-        "or": lambda x, y: lambda species: [any(a or b for a in x(species) for b in y(species))],
+        ">=": binop(lambda a, b: a >= b),
+        "<=": binop(lambda a, b: a <= b),
+        "==": binop(lambda a, b: a == b),
+        "and": binop(lambda a, b: a and b),
+        "or": binop(lambda a, b: a or b),
         "of": lambda x, y: x(y),
     }[string_representation]
 
