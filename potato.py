@@ -39,6 +39,19 @@ def pokemon_type(pokemon_instance):
         for d in pokemon_instance.types
     ]
 
+def pokemon_mega(pokemon_instance):
+    if pokemon_instance.default_form.is_mega:
+        return [pokemon_instance]
+    else:
+        return []
+
+def pokemon_default_form(pokemon_instance):
+    if pokemon_instance.default_form.form_identifier == None:
+        return [pokemon_instance]
+    else:
+        return []
+
+
 def game_starter(pokemon_instance):
     return [
         True
@@ -80,6 +93,10 @@ def operand(part):
         return pokedex_regional
     elif part == "type":
         return pokemon_type
+    elif part == "pokemon.mega":
+        return pokemon_mega
+    elif part == "pokemon.default_form":
+        return pokemon_default_form
     elif part == "game.starter":
         return game_starter
     elif part == "evolution":
@@ -102,6 +119,13 @@ def build_query(query):
         opr = operations(parts[1])
         op2 = operand(parts[2])
         query = opr(op1, op2)
+    if len(parts) == 5:
+        op1 = operand(parts[0])
+        opr1 = operations(parts[1])
+        op2 = operand(parts[2])
+        opr2 = operations(parts[3])
+        op3 = operand(parts[4])
+        query = opr1(op1, opr2(op2, op3))
     elif len(parts) == 7:
         op1 = operand(parts[0])
         opr1 = operations(parts[1])
@@ -110,10 +134,18 @@ def build_query(query):
         op3 = operand(parts[4])
         opr3 = operations(parts[5])
         op4 = operand(parts[6])
-
-        q1 = opr1(op1, op2)
-        q2 = opr3(op3, op4)
-        query = opr2(q1, q2)
+        query = opr2(opr1(op1, op2), opr3(op3, op4))
+    elif len(parts) == 9:
+        op1 = operand(parts[0])
+        opr1 = operations(parts[1])
+        op2 = operand(parts[2])
+        opr2 = operations(parts[3])
+        op3 = operand(parts[4])
+        opr3 = operations(parts[5])
+        op4 = operand(parts[6])
+        opr4 = operations(parts[7])
+        op5 = operand(parts[8])
+        query = opr3(opr1(op1, opr2(op2, op3)), opr4(op4, op5))
 
     return lambda species: any(query(species))
 
