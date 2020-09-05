@@ -33,6 +33,13 @@ def pokedex_national(pokemon_instance):
         if d.pokedex.is_main_series == 1 and d.pokedex_id == 1
     ]
 
+def pokemon_type(pokemon_instance):
+    return [
+        d.identifier
+        for d in pokemon_instance.types
+    ]
+
+
 def operations(string_representation):
     return {
         ">=": lambda x, y: any(a >= b for a in x for b in y),
@@ -45,10 +52,12 @@ def operand(part):
         return pokedex_national
     elif part == "pokedex.regional":
         return pokedex_regional
+    elif part == "type":
+        return pokemon_type
     elif part.isdigit():
         return lambda species: [int(part)]
-    else:
-        raise "oops"
+    elif part[0] == "'" and part[len(part) - 1] == "'":
+        return lambda species: [part[1:len(part)-1]]
 
 def poop(query):
     session = get_session([])
