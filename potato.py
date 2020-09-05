@@ -63,10 +63,23 @@ def operand(part):
 def build_query(query):
     parts = query.split(" ")
 
-    op1 = operand(parts[0])
-    opr = operations(parts[1])
-    op2 = operand(parts[2])
-    query = lambda species: opr(op1(species), op2(species))
+    if len(parts) == 3:
+        op1 = operand(parts[0])
+        opr = operations(parts[1])
+        op2 = operand(parts[2])
+        query = lambda species: opr(op1(species), op2(species))
+    elif len(parts) == 7:
+        op1 = operand(parts[0])
+        opr1 = operations(parts[1])
+        op2 = operand(parts[2])
+        opr2 = operations(parts[3])
+        op3 = operand(parts[4])
+        opr3 = operations(parts[5])
+        op4 = operand(parts[6])
+
+        q1 = lambda species: opr1(op1(species), op2(species))
+        q2 = lambda species: opr3(op3(species), op4(species))
+        query = lambda species: opr2(q1(species), q2(species))
 
     return lambda species: any(query(species))
 
