@@ -49,6 +49,16 @@ def game_starter(pokemon_instance):
             and (d.pokedex_number - 1) % 3 == 0
     ]
 
+def evolution_fn(fn):
+    def f(pokemon_instance):
+        if pokemon_instance.species.parent_species is None:
+            return []
+        else:
+            return [fn(p) for p in pokemon_instance.species.parent_species.pokemon]
+
+    return f
+
+
 def operations(string_representation):
     return {
         ">=": lambda x, y: lambda species: [any(a >= b for a in x(species) for b in y(species))],
@@ -68,6 +78,8 @@ def operand(part):
         return pokemon_type
     elif part == "game.starter":
         return game_starter
+    elif part == "evolution":
+        return evolution_fn
     elif part == "not":
         return lambda expr: lambda species: [not any(expr(species))]
     elif part.isdigit():
