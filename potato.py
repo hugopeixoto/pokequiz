@@ -46,6 +46,7 @@ def operations(string_representation):
         "<=": lambda x, y: [any(a <= b for a in x for b in y)],
         "==": lambda x, y: [any(a == b for a in x for b in y)],
         "and": lambda x, y: [any(a and b for a in x for b in y)],
+        "or": lambda x, y: [any(a or b for a in x for b in y)],
     }[string_representation]
 
 def operand(part):
@@ -83,7 +84,7 @@ def build_query(query):
 
     return lambda species: any(query(species))
 
-def poop(query):
+def find_pokemon(query):
     session = get_session([])
 
     query = build_query(query)
@@ -92,5 +93,5 @@ def poop(query):
     pokemon = [p for p in pokemon if query(p)]
     return pokemon
 
-for p in poop(sys.argv[1]):
+for p in find_pokemon(sys.argv[1]):
     print(p.identifier)
