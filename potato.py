@@ -59,11 +59,7 @@ def operand(part):
     elif part[0] == "'" and part[len(part) - 1] == "'":
         return lambda species: [part[1:len(part)-1]]
 
-def poop(query):
-    session = get_session([])
-
-    pokemon = session.query(pokedex.db.tables.Pokemon).all()
-
+def build_query(query):
     parts = query.split(" ")
 
     op1 = operand(parts[0])
@@ -71,6 +67,15 @@ def poop(query):
     op2 = operand(parts[2])
     query = lambda species: opr(op1(species), op2(species))
 
+    return query
+
+
+def poop(query):
+    session = get_session([])
+
+    query = build_query(query)
+
+    pokemon = session.query(pokedex.db.tables.Pokemon).all()
     pokemon = [p for p in pokemon if query(p)]
     return pokemon
 
