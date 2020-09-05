@@ -1,4 +1,5 @@
 import pokedex
+import sys
 
 import pokedex.cli.search
 import pokedex.db
@@ -30,7 +31,13 @@ def poop(query):
             if any(d for d in p.species.dex_numbers if d.pokedex_id == 1 and d.pokedex_number <= 151)
         ]
 
+    if query == "pokedex.regional == 1":
+        pokemon = [
+            p for p in pokemon
+            if any(d for d in p.species.dex_numbers if d.pokedex.is_main_series == 1 and d.pokedex_id != 1 and d.pokedex_number == 1)
+        ]
+
     return pokemon
 
-for p in poop("pokedex.national <= 151"):
+for p in poop(sys.argv[1]):
     print(p.identifier)
