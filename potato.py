@@ -42,9 +42,10 @@ def pokemon_type(pokemon_instance):
 
 def operations(string_representation):
     return {
-        ">=": lambda x, y: any(a >= b for a in x for b in y),
-        "<=": lambda x, y: any(a <= b for a in x for b in y),
-        "==": lambda x, y: any(a == b for a in x for b in y),
+        ">=": lambda x, y: [any(a >= b for a in x for b in y)],
+        "<=": lambda x, y: [any(a <= b for a in x for b in y)],
+        "==": lambda x, y: [any(a == b for a in x for b in y)],
+        "and": lambda x, y: [any(a and b for a in x for b in y)],
     }[string_representation]
 
 def operand(part):
@@ -67,8 +68,7 @@ def build_query(query):
     op2 = operand(parts[2])
     query = lambda species: opr(op1(species), op2(species))
 
-    return query
-
+    return lambda species: any(query(species))
 
 def poop(query):
     session = get_session([])
