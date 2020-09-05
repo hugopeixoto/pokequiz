@@ -39,6 +39,15 @@ def pokemon_type(pokemon_instance):
         for d in pokemon_instance.types
     ]
 
+def game_starter(pokemon_instance):
+    return [
+        True
+        for d in pokemon_instance.species.dex_numbers
+        if d.pokedex.is_main_series == 1
+            and d.pokedex_id not in [1, 13,14, 18,19,20, 22,23,24,25]
+            and d.pokedex_number <= 9
+            and (d.pokedex_number - 1) % 3 == 0
+    ]
 
 def operations(string_representation):
     return {
@@ -56,6 +65,8 @@ def operand(part):
         return pokedex_regional
     elif part == "type":
         return pokemon_type
+    elif part == "game.starter":
+        return game_starter
     elif part.isdigit():
         return lambda species: [int(part)]
     elif part[0] == "'" and part[len(part) - 1] == "'":
@@ -64,6 +75,9 @@ def operand(part):
 def build_query(query):
     parts = query.split(" ")
 
+    if len(parts) == 1:
+        op1 = operand(parts[0])
+        query = lambda species: op1(species)
     if len(parts) == 3:
         op1 = operand(parts[0])
         opr = operations(parts[1])
