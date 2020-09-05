@@ -49,6 +49,9 @@ def game_starter(pokemon_instance):
             and (d.pokedex_number - 1) % 3 == 0
     ]
 
+def not_fn(fn):
+    return lambda species: [not any(fn(species))]
+
 def evolution_fn(fn):
     def f(pokemon_instance):
         if pokemon_instance.species.parent_species is None:
@@ -81,7 +84,7 @@ def operand(part):
     elif part == "evolution":
         return evolution_fn
     elif part == "not":
-        return lambda expr: lambda species: [not any(expr(species))]
+        return not_fn
     elif part.isdigit():
         return lambda species: [int(part)]
     elif part[0] == "'" and part[len(part) - 1] == "'":
