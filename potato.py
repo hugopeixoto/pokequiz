@@ -56,6 +56,7 @@ def operations(string_representation):
         "==": lambda x, y: [any(a == b for a in x for b in y)],
         "and": lambda x, y: [any(a and b for a in x for b in y)],
         "or": lambda x, y: [any(a or b for a in x for b in y)],
+        "of": lambda x, y: x(y),
     }[string_representation]
 
 def operand(part):
@@ -67,6 +68,8 @@ def operand(part):
         return pokemon_type
     elif part == "game.starter":
         return game_starter
+    elif part == "not":
+        return lambda species: lambda expr: [not any(expr)]
     elif part.isdigit():
         return lambda species: [int(part)]
     elif part[0] == "'" and part[len(part) - 1] == "'":
