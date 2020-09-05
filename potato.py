@@ -51,11 +51,11 @@ def game_starter(pokemon_instance):
 
 def operations(string_representation):
     return {
-        ">=": lambda x, y: [any(a >= b for a in x for b in y)],
-        "<=": lambda x, y: [any(a <= b for a in x for b in y)],
-        "==": lambda x, y: [any(a == b for a in x for b in y)],
-        "and": lambda x, y: [any(a and b for a in x for b in y)],
-        "or": lambda x, y: [any(a or b for a in x for b in y)],
+        ">=": lambda x, y: lambda species: [any(a >= b for a in x(species) for b in y(species))],
+        "<=": lambda x, y: lambda species: [any(a <= b for a in x(species) for b in y(species))],
+        "==": lambda x, y: lambda species: [any(a == b for a in x(species) for b in y(species))],
+        "and": lambda x, y: lambda species: [any(a and b for a in x(species) for b in y(species))],
+        "or": lambda x, y: lambda species: [any(a or b for a in x(species) for b in y(species))],
         "of": lambda x, y: x(y),
     }[string_representation]
 
@@ -69,7 +69,7 @@ def operand(part):
     elif part == "game.starter":
         return game_starter
     elif part == "not":
-        return lambda species: lambda expr: [not any(expr)]
+        return lambda expr: lambda species: [not any(expr(species))]
     elif part.isdigit():
         return lambda species: [int(part)]
     elif part[0] == "'" and part[len(part) - 1] == "'":
@@ -80,12 +80,12 @@ def build_query(query):
 
     if len(parts) == 1:
         op1 = operand(parts[0])
-        query = lambda species: op1(species)
+        query = op1
     if len(parts) == 3:
         op1 = operand(parts[0])
         opr = operations(parts[1])
         op2 = operand(parts[2])
-        query = lambda species: opr(op1(species), op2(species))
+        query = opr(op1, op2)
     elif len(parts) == 7:
         op1 = operand(parts[0])
         opr1 = operations(parts[1])
@@ -95,9 +95,9 @@ def build_query(query):
         opr3 = operations(parts[5])
         op4 = operand(parts[6])
 
-        q1 = lambda species: opr1(op1(species), op2(species))
-        q2 = lambda species: opr3(op3(species), op4(species))
-        query = lambda species: opr2(q1(species), q2(species))
+        q1 = opr1(op1, op2)
+        q2 = opr3(op3, op4)
+        query = opr2(q1, q2)
 
     return lambda species: any(query(species))
 
