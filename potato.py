@@ -19,6 +19,19 @@ def get_lookup(args, session=None, recreate=False):
 
     return lookup
 
+def pokedex_regional(pokemon_instance):
+    return [
+        d.pokedex_number
+        for d in pokemon_instance.species.dex_numbers
+        if d.pokedex.is_main_series == 1 and d.pokedex_id != 1
+    ]
+
+def pokedex_national(pokemon_instance):
+    return [
+        d.pokedex_number
+        for d in pokemon_instance.species.dex_numbers
+        if d.pokedex.is_main_series == 1 and d.pokedex_id == 1
+    ]
 
 def poop(query):
     session = get_session([])
@@ -28,13 +41,13 @@ def poop(query):
     if query == "pokedex.national <= 151":
         pokemon = [
             p for p in pokemon
-            if any(d for d in p.species.dex_numbers if d.pokedex_id == 1 and d.pokedex_number <= 151)
+            if any(r <= 151 for r in pokedex_national(p))
         ]
 
     if query == "pokedex.regional == 1":
         pokemon = [
             p for p in pokemon
-            if any(d for d in p.species.dex_numbers if d.pokedex.is_main_series == 1 and d.pokedex_id != 1 and d.pokedex_number == 1)
+            if any(r == 1 for r in pokedex_regional(p))
         ]
 
     return pokemon
