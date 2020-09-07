@@ -1,5 +1,6 @@
 import pokedex
 import sys
+import re
 
 import pokedex.cli.search
 import pokedex.db
@@ -109,7 +110,15 @@ def operand(part):
         return lambda species: [part[1:len(part)-1]]
 
 def build_query(query):
-    parts = query.split(" ")
+    scanner = re.Scanner([
+        (r"==|<=|>=|and|or|of", lambda s,t: t),
+        (r"[a-z._]+", lambda s,t: t),
+        (r"[0-9]+", lambda s,t: t),
+        (r"'.*'", lambda s,t: t),
+        (r"\s+", None),
+    ])
+
+    parts, _ = scanner.scan(query)
 
     if len(parts) == 1:
         op1 = operand(parts[0])
