@@ -85,36 +85,31 @@ def operations(string_representation):
         "and": binop(lambda a, b: a and b),
         "or": binop(lambda a, b: a or b),
         "of": lambda x, y: x(y),
-    }[string_representation]
+    }[string_representation[1]]
 
 def operand(part):
-    if part == "pokedex.national":
-        return pokedex_national
-    elif part == "pokedex.regional":
-        return pokedex_regional
-    elif part == "type":
-        return pokemon_type
-    elif part == "pokemon.mega":
-        return pokemon_mega
-    elif part == "pokemon.default_form":
-        return pokemon_default_form
-    elif part == "game.starter":
-        return game_starter
-    elif part == "evolution":
-        return evolution_fn
-    elif part == "not":
-        return not_fn
-    elif part.isdigit():
-        return lambda species: [int(part)]
-    elif part[0] == "'" and part[len(part) - 1] == "'":
-        return lambda species: [part[1:len(part)-1]]
+    t, token = part
+
+    if t == "identifier":
+        return {
+            "pokedex.national": pokedex_national,
+            "pokedex.regional": pokedex_regional,
+            "type": pokemon_type,
+            "pokemon.mega": pokemon_mega,
+            "pokemon.default_form": pokemon_default_form,
+            "game.starter": game_starter,
+            "evolution": evolution_fn,
+            "not": not_fn,
+        }[token]
+    else:
+        return lambda species: [token]
 
 def build_query(query):
     scanner = re.Scanner([
-        (r"==|<=|>=|and|or|of", lambda s,t: t),
-        (r"[a-z._]+", lambda s,t: t),
-        (r"[0-9]+", lambda s,t: t),
-        (r"'.*'", lambda s,t: t),
+        (r"==|<=|>=|and|or|of", lambda s,t: ("operator", t)),
+        (r"[a-z._]+", lambda s,t: ("identifier", t)),
+        (r"[0-9]+", lambda s,t: ("number", int(t))),
+        (r"'.*'", lambda s,t: ("string", t[1:len(part)-1])),
         (r"\s+", None),
     ])
 
