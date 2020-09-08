@@ -121,10 +121,17 @@ def shunt(tokens):
         if token[0] == "number" or token[0] == "string" or token[0] == "identifier":
             output.append(token)
         elif token[0] == "operator":
-            while len(operators) > 0 and precedence(operators[-1][1]) > precedence(token[1]):
+            while len(operators) > 0 and operators[-1][0] == "operator" and precedence(operators[-1][1]) > precedence(token[1]):
                 output.append(operators[-1])
                 del operators[-1]
             operators.append(token)
+        elif token[0] == "lparen":
+            operators.append(token)
+        elif token[0] == "rparen":
+            while len(operators) > 0 and operators[-1][0] != "lparen":
+                output.append(operators[-1])
+                del operators[-1]
+            del operators[-1]
 
     return output + list(reversed(operators))
 
@@ -134,6 +141,8 @@ def build_query(query):
         (r"[a-z._]+", lambda s,t: ("identifier", t)),
         (r"[0-9]+", lambda s,t: ("number", int(t))),
         (r"'.*'", lambda s,t: ("string", t[1:len(part)-1])),
+        (r"\(", lambda s,t: ("lparen", t)),
+        (r"\)", lambda s,t: ("rparen", t)),
         (r"\s+", None),
     ])
 
