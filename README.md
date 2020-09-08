@@ -30,4 +30,11 @@ charizard-mega-x        alakazam-mega           gyarados-mega
 charizard-mega-y        slowbro-mega            aerodactyl-mega
 blastoise-mega          gengar-mega             mewtwo-mega-x
 beedrill-mega           kangaskhan-mega         mewtwo-mega-y
+
+$ python potato.py "(evolution of evolution of game.starter) and pokemon.default_form" | column -c 80
+venusaur        feraligatr      infernape       chesnaught      primarina
+charizard       sceptile        empoleon        delphox
+blastoise       blaziken        serperior       greninja
+meganium        swampert        emboar          decidueye
+typhlosion      torterra        samurott        incineroar
 ```
