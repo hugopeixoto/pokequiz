@@ -75,7 +75,6 @@ def evolution_fn(fn):
 
     return f
 
-
 def operations(string_representation):
     binop = lambda op: lambda x, y: lambda species: [any(op(a, b) for a in x(species) for b in y(species))]
     return {
@@ -86,6 +85,16 @@ def operations(string_representation):
         "or": binop(lambda a, b: a or b),
         "of": lambda x, y: x(y),
     }[string_representation[1]]
+
+def precedence(operator):
+    return {
+        ">=": 4,
+        "<=": 4,
+        "==": 4,
+        "and": 3,
+        "or": 3,
+        "of": 2,
+    }[operator]
 
 def operand(part):
     t, token = part
@@ -104,6 +113,21 @@ def operand(part):
     else:
         return lambda species: [token]
 
+def shunt(tokens):
+    output = []
+    operators = []
+
+    for token in tokens:
+        if token[0] == "number" or token[0] == "string" or token[0] == "identifier":
+            output.append(token)
+        elif token[0] == "operator":
+            while len(operators) > 0 and precedence(operators[-1][1]) > precedence(token[1]):
+                output.append(operators[-1])
+                del operators[-1]
+            operators.append(token)
+
+    return output + list(reversed(operators))
+
 def build_query(query):
     scanner = re.Scanner([
         (r"==|<=|>=|and|or|of", lambda s,t: ("operator", t)),
@@ -115,41 +139,20 @@ def build_query(query):
 
     parts, _ = scanner.scan(query)
 
-    if len(parts) == 1:
-        op1 = operand(parts[0])
-        query = op1
-    if len(parts) == 3:
-        op1 = operand(parts[0])
-        opr = operations(parts[1])
-        op2 = operand(parts[2])
-        query = opr(op1, op2)
-    if len(parts) == 5:
-        op1 = operand(parts[0])
-        opr1 = operations(parts[1])
-        op2 = operand(parts[2])
-        opr2 = operations(parts[3])
-        op3 = operand(parts[4])
-        query = opr1(op1, opr2(op2, op3))
-    elif len(parts) == 7:
-        op1 = operand(parts[0])
-        opr1 = operations(parts[1])
-        op2 = operand(parts[2])
-        opr2 = operations(parts[3])
-        op3 = operand(parts[4])
-        opr3 = operations(parts[5])
-        op4 = operand(parts[6])
-        query = opr2(opr1(op1, op2), opr3(op3, op4))
-    elif len(parts) == 9:
-        op1 = operand(parts[0])
-        opr1 = operations(parts[1])
-        op2 = operand(parts[2])
-        opr2 = operations(parts[3])
-        op3 = operand(parts[4])
-        opr3 = operations(parts[5])
-        op4 = operand(parts[6])
-        opr4 = operations(parts[7])
-        op5 = operand(parts[8])
-        query = opr3(opr1(op1, opr2(op2, op3)), opr4(op4, op5))
+    rpn = shunt(parts)
+
+    stack = []
+    for token in rpn:
+        if token[0] == "operator":
+            op1 = stack[-2]
+            op2 = stack[-1]
+            del stack[-1]
+            del stack[-1]
+            stack.append(operations(token)(op1, op2))
+        else:
+            stack.append(operand(token))
+
+    query = stack[0]
 
     return lambda species: any(query(species))
 
